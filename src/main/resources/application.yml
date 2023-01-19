@@ -18,6 +18,6 @@ spring:
     spring:
       jpa:database-platform: org.hibernate.dialect.H2Dialect
     show-sql: true
-    defer-datasource-initialization: true
     hibernate:
       ddl-auto: update
+    defer-datasource-initialization: true

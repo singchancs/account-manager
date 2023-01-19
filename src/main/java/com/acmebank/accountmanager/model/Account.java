@@ -1,8 +1,8 @@
 package com.acmebank.accountmanager.model;
 
 import com.acmebank.accountmanager.Currency;
-import jakarta.persistence.*;
 
+import javax.persistence.*;
 import java.util.Date;
 
 @Entity
