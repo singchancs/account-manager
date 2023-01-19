@@ -89,18 +89,25 @@ public class AccountService {
                 this.updateBalance(sourceAccount, sourceOriginalBalance.subtract(transferAmount));
                 this.updateBalance(targetAccount, targetOriginalBalance.add(transferAmount));
                 builder.isSuccessful(true);
+                transferHistoryRepository.save(builder.build());
+
             } catch (Exception ex) {
                 builder.isSuccessful(false);
+                builder.build();
+                transferHistoryRepository.save(builder.build());
+
                 log.error("transfer unsuccessful. investigation required");
                 throw new TransferFailedException(ErrorCode.ERR_ACME_001, "Transfer failed", ex);
             }
         } else {
             log.info("not enough balance to transfer to other account");
+            builder.isSuccessful(false);
+            builder.build();
+            transferHistoryRepository.save(builder.build());
+
             throw new TransferFailedException(ErrorCode.ERR_ACME_003, "Insufficient Balance");
 
         }
-        TransferHistory transferHistory = builder.build();
-        transferHistoryRepository.save(transferHistory);
         return this.convertToDto(sourceAccount);
     }
 }
