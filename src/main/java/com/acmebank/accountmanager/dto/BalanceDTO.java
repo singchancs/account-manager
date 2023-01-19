@@ -1,16 +1,25 @@
 package com.acmebank.accountmanager.dto;
 
+import com.acmebank.accountmanager.Currency;
+import lombok.Builder;
+import lombok.Data;
+
+import java.util.Date;
+
+@Data
+@Builder
 public class BalanceDTO {
 
-    private String currency;
+    private Currency currency;
     private Double balance;
+    private Date lastUpdatedAt;
 
 
-    public String getCurrency() {
+    public Currency getCurrency() {
         return currency;
     }
 
-    public void setCurrency(String currency) {
+    public void setCurrency(Currency currency) {
         this.currency = currency;
     }
 
@@ -20,5 +29,14 @@ public class BalanceDTO {
 
     public void setBalance(Double balance) {
         this.balance = balance;
+    }
+
+
+    public Date getLastUpdatedAt() {
+        return lastUpdatedAt;
+    }
+
+    public void setLastUpdatedAt(Date lastUpdatedAt) {
+        this.lastUpdatedAt = lastUpdatedAt;
     }
 }

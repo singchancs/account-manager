@@ -1,11 +1,19 @@
 package com.acmebank.accountmanager.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
 @Entity
 @Table
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class TransferHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,6 +28,15 @@ public class TransferHistory {
     private Date transferAt;
     @Column
     private Boolean isSuccessful;
+    /*
+        ERR_ACME_001: Internal Error
+        ERR_ACME_002: Insufficient Balance
+     */
+    @Column
+    private String errorCode;
+    @Column
+    private String remark;
+
 
     public Long getId() {
         return id;
@@ -67,5 +84,21 @@ public class TransferHistory {
 
     public void setSuccessful(Boolean successful) {
         isSuccessful = successful;
+    }
+
+    public String getErrorCode() {
+        return errorCode;
+    }
+
+    public void setErrorCode(String errorCode) {
+        this.errorCode = errorCode;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 }
