@@ -6,6 +6,8 @@ import com.acmebank.accountmanager.dao.TransferHistoryRepository;
 import com.acmebank.accountmanager.dto.BalanceDTO;
 import com.acmebank.accountmanager.dto.TransferPayloadDTO;
 import com.acmebank.accountmanager.dto.TransferResultDTO;
+import com.acmebank.accountmanager.exceptions.EntityNotFoundException;
+import com.acmebank.accountmanager.exceptions.TransferFailedException;
 import com.acmebank.accountmanager.model.Account;
 import com.acmebank.accountmanager.model.TransferHistory;
 import org.slf4j.Logger;
@@ -25,18 +27,17 @@ public class AccountService {
     @Autowired
     private TransferHistoryRepository transferHistoryRepository;
 
-    private Account getAccount(String accountNumber) throws Exception {
+    private Account getAccount(String accountNumber) throws EntityNotFoundException {
         log.info("getting account with account number: " + accountNumber);
         Account account = this.accountRepository.findByAccountNumber(accountNumber);
         if (account == null) {
-            //TODO Handle Account Not Found Error
             log.error("account not found: " + accountNumber);
-            throw new Exception("Account not found");
+            throw new EntityNotFoundException(Account.class, "accountNumber", accountNumber);
         }
         return account;
     }
 
-    public BalanceDTO getBalance(String accountNumber) throws Exception {
+    public BalanceDTO getBalance(String accountNumber) throws EntityNotFoundException {
         log.info("getting account with account number: " + accountNumber);
         Account account = this.getAccount(accountNumber);
         log.info("account balance: " + account.getBalance());
@@ -58,7 +59,7 @@ public class AccountService {
         accountRepository.save(account);
     }
 
-    public TransferResultDTO transferTo(String sourceAccountNumber, TransferPayloadDTO payloadDTO) throws Exception {
+    public TransferResultDTO transferTo(String sourceAccountNumber, TransferPayloadDTO payloadDTO) throws EntityNotFoundException, TransferFailedException {
         log.info("getting account with account number: " + sourceAccountNumber);
         Double transferAmount = payloadDTO.getTransferAmount();
         String targetAccountNumber = payloadDTO.getTargetAccountNumber();;
@@ -85,6 +86,7 @@ public class AccountService {
             } catch (Exception ex) {
                 builder.isSuccessful(false);
                 log.error("transfer unsuccessful. investigation required");
+                throw new TransferFailedException("Transfer failed", ex);
             }
         } else {
             log.info("not enough balance to transfer to other account");
