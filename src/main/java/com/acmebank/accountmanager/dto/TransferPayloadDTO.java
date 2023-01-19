@@ -1,33 +1,34 @@
 package com.acmebank.accountmanager.dto;
 
-import com.acmebank.accountmanager.Currency;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import org.hibernate.validator.constraints.NotBlank;
+
+import javax.validation.constraints.DecimalMin;
+import java.math.BigDecimal;
 
 @Data
 @Builder
 @AllArgsConstructor
 public class TransferPayloadDTO {
 
+    @NotBlank
     private String targetAccountNumber;
-
-    private Currency transferCurrency;
-    private Double transferAmount;
-
-    public TransferPayloadDTO() {
-        this.transferCurrency = Currency.HKD; // Default as HKD
-    }
+    @NotBlank
+    private String transferCurrency;
+    @DecimalMin(value = "0.0", message = "To must be greater than zero")
+    private BigDecimal transferAmount;
 
     public String getTargetAccountNumber() {
         return targetAccountNumber;
     }
 
-    public Currency getTransferCurrency() {
+    public String getTransferCurrency() {
         return transferCurrency;
     }
 
-    public void setTransferCurrency(Currency transferCurrency) {
+    public void setTransferCurrency(String transferCurrency) {
         this.transferCurrency = transferCurrency;
     }
 
@@ -36,11 +37,11 @@ public class TransferPayloadDTO {
     }
 
 
-    public Double getTransferAmount() {
+    public BigDecimal getTransferAmount() {
         return transferAmount;
     }
 
-    public void setTransferAmount(Double transferAmount) {
+    public void setTransferAmount(BigDecimal transferAmount) {
         this.transferAmount = transferAmount;
     }
 }

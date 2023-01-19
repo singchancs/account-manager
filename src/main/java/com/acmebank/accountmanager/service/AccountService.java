@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Service
@@ -31,7 +32,7 @@ public class AccountService {
         Account account = this.accountRepository.findByAccountNumber(accountNumber);
         if (account == null) {
             log.error("account not found: " + accountNumber);
-            throw new EntityNotFoundException(Account.class, ErrorCode.ERR_ACME_003, "accountNumber", accountNumber);
+            throw new EntityNotFoundException(Account.class, ErrorCode.ERR_ACME_002, "accountNumber", accountNumber);
         }
         return account;
     }
@@ -52,7 +53,7 @@ public class AccountService {
         return balanceDTO;
     }
 
-    private void updateBalance(Account account, Double adjustment) {
+    private void updateBalance(Account account, BigDecimal adjustment) {
         account.setBalance(adjustment);
         account.setUpdatedAt(new Date());
         accountRepository.save(account);
@@ -60,9 +61,16 @@ public class AccountService {
 
     public BalanceDTO transferTo(String sourceAccountNumber, TransferPayloadDTO payloadDTO) throws EntityNotFoundException, TransferFailedException {
         log.info("getting account with account number: " + sourceAccountNumber);
-        Double transferAmount = payloadDTO.getTransferAmount();
-        String targetAccountNumber = payloadDTO.getTargetAccountNumber();;
+        BigDecimal transferAmount = payloadDTO.getTransferAmount();
+        String targetAccountNumber = payloadDTO.getTargetAccountNumber();
         Account sourceAccount = this.getAccount(sourceAccountNumber);
+        if (sourceAccountNumber.equalsIgnoreCase(targetAccountNumber)) {
+            throw new TransferFailedException(ErrorCode.ERR_ACME_004, "Source account is the same as target account");
+        }
+
+        if (transferAmount.compareTo(BigDecimal.ZERO) == -1 || transferAmount.compareTo(BigDecimal.ZERO) == 0) {
+            throw new TransferFailedException(ErrorCode.ERR_ACME_005, "Invalid transfer amount. Must be greater than 0");
+        }
 
         TransferHistory.TransferHistoryBuilder builder = TransferHistory.builder()
                 .sourceAccountNumber(sourceAccountNumber)
@@ -70,16 +78,16 @@ public class AccountService {
                 .transferAmount(transferAmount)
                 .transferAt(new Date());
 
-        Double sourceOriginalBalance = sourceAccount.getBalance();
-        if (sourceOriginalBalance > 0 && sourceOriginalBalance >= transferAmount) {
+        BigDecimal sourceOriginalBalance = sourceAccount.getBalance();
+        if (sourceOriginalBalance.compareTo(BigDecimal.ZERO) == 1 && (sourceOriginalBalance.compareTo(transferAmount) == 1 || sourceOriginalBalance.compareTo(transferAmount) == 0)) {
             log.info("got enough balance to transfer to other account");
 
             Account targetAccount = this.getAccount(targetAccountNumber);
-            Double targetOriginalBalance = targetAccount.getBalance();
+            BigDecimal targetOriginalBalance = targetAccount.getBalance();
             try {
                 log.info("transferring " + transferAmount + " from " + sourceAccountNumber + " to " + targetAccountNumber);
-                this.updateBalance(sourceAccount, sourceOriginalBalance - transferAmount);
-                this.updateBalance(targetAccount, targetOriginalBalance + transferAmount);
+                this.updateBalance(sourceAccount, sourceOriginalBalance.subtract(transferAmount));
+                this.updateBalance(targetAccount, targetOriginalBalance.add(transferAmount));
                 builder.isSuccessful(true);
 
             } catch (Exception ex) {
@@ -89,7 +97,7 @@ public class AccountService {
             }
         } else {
             log.info("not enough balance to transfer to other account");
-            throw new TransferFailedException(ErrorCode.ERR_ACME_002, "Insufficient Balance");
+            throw new TransferFailedException(ErrorCode.ERR_ACME_003, "Insufficient Balance");
 
         }
         TransferHistory transferHistory = builder.build();

@@ -1,5 +1,6 @@
 package com.acmebank.accountmanager.handler;
 
+import com.acmebank.accountmanager.constant.ErrorCode;
 import com.acmebank.accountmanager.error.ApiError;
 import com.acmebank.accountmanager.exceptions.EntityNotFoundException;
 import com.acmebank.accountmanager.exceptions.TransferFailedException;
@@ -10,11 +11,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import javax.servlet.http.HttpServletRequest;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -38,7 +43,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             MissingServletRequestParameterException ex, HttpHeaders headers,
             HttpStatus status, WebRequest request) {
         String error = ex.getParameterName() + " parameter is missing";
-        return buildResponseEntity(new ApiError(BAD_REQUEST, error, ex));
+        return buildResponseEntity(new ApiError(BAD_REQUEST, ErrorCode.ERR_ACME_006, error, ex));
     }
 
     /**
@@ -57,6 +62,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             HttpStatus status,
             WebRequest request) {
         ApiError apiError = new ApiError(BAD_REQUEST);
+        apiError.setErrorCode(ErrorCode.ERR_ACME_006);
         apiError.setMessage("Validation error");
         apiError.addValidationErrors(ex.getBindingResult().getFieldErrors());
         apiError.addValidationError(ex.getBindingResult().getGlobalErrors());
@@ -84,6 +90,24 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         ApiError apiError = new ApiError(INTERNAL_SERVER_ERROR);
         apiError.setMessage(ex.getMessage());
         apiError.setErrorCode(ex.getErrorCode());
+        return buildResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    protected ResponseEntity<Object> handleMissingRequestHeader(MissingRequestHeaderException ex) {
+        ApiError apiError = new ApiError(BAD_REQUEST);
+        apiError.setErrorCode(ErrorCode.ERR_ACME_006);
+        apiError.setMessage(ex.getMessage());
+        return buildResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> handleError(HttpServletRequest req, Exception ex) {
+        logger.error("Request: " + req.getRequestURL() + " raised " + ex);
+
+        ApiError apiError = new ApiError(INTERNAL_SERVER_ERROR);
+        apiError.setErrorCode(ErrorCode.ERR_ACME_001);
+        apiError.setMessage(ex.getMessage());
         return buildResponseEntity(apiError);
     }
 

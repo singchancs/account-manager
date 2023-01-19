@@ -4,6 +4,7 @@ import com.acmebank.accountmanager.Currency;
 import lombok.Builder;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Data
@@ -11,7 +12,7 @@ import java.util.Date;
 public class BalanceDTO {
 
     private Currency currency;
-    private Double balance;
+    private BigDecimal balance;
     private Date lastUpdatedAt;
 
 
@@ -23,11 +24,11 @@ public class BalanceDTO {
         this.currency = currency;
     }
 
-    public Double getBalance() {
+    public BigDecimal getBalance() {
         return balance;
     }
 
-    public void setBalance(Double balance) {
+    public void setBalance(BigDecimal balance) {
         this.balance = balance;
     }
 

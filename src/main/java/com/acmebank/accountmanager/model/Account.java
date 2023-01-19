@@ -3,6 +3,7 @@ package com.acmebank.accountmanager.model;
 import com.acmebank.accountmanager.Currency;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
@@ -11,21 +12,21 @@ public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(updatable = false, unique = true, nullable = false)
+    @Column(updatable = false, unique = true, nullable = false, length = 8)
     private String accountNumber;
     @Enumerated(value = EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 3)
     private Currency currency;
     @Column(nullable = false)
-    private Double balance;
-    @Column(nullable = false)
+    private BigDecimal balance;
+    @Column(updatable = false, nullable = false, length = 100)
     private String ownedBy;
-    @Column(nullable = false)
+    @Column(updatable = false, nullable = false, length = 100)
     private String createdBy;
     @Temporal(value = TemporalType.TIMESTAMP)
-    @Column(nullable = false)
+    @Column(updatable = false, nullable = false)
     private Date createdAt;
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     private String updatedBy;
     @Temporal(value = TemporalType.TIMESTAMP)
     @Column(nullable = false)
@@ -57,11 +58,11 @@ public class Account {
         this.currency = currency;
     }
 
-    public Double getBalance() {
+    public BigDecimal getBalance() {
         return balance;
     }
 
-    public void setBalance(Double balance) {
+    public void setBalance(BigDecimal balance) {
         this.balance = balance;
     }
 

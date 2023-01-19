@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
@@ -18,20 +19,16 @@ public class TransferHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column
+    @Column(updatable = false, nullable = false, length = 8)
     private String sourceAccountNumber;
-    @Column
+    @Column(updatable = false, nullable = false, length = 8)
     private String targetAccountNumber;
-    @Column
-    private Double transferAmount;
-    @Column
+    @Column(updatable = false, nullable = false)
+    private BigDecimal transferAmount;
+    @Column(updatable = false, nullable = false)
     private Date transferAt;
-    @Column
+    @Column(nullable = false)
     private Boolean isSuccessful;
-    /*
-        ERR_ACME_001: Internal Error
-        ERR_ACME_002: Insufficient Balance
-     */
     @Column
     private String errorCode;
     @Column
@@ -62,11 +59,11 @@ public class TransferHistory {
         this.targetAccountNumber = targetAccountNumber;
     }
 
-    public Double getTransferAmount() {
+    public BigDecimal getTransferAmount() {
         return transferAmount;
     }
 
-    public void setTransferAmount(Double transferAmount) {
+    public void setTransferAmount(BigDecimal transferAmount) {
         this.transferAmount = transferAmount;
     }
 
