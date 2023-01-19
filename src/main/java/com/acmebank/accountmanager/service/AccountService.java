@@ -89,7 +89,6 @@ public class AccountService {
                 this.updateBalance(sourceAccount, sourceOriginalBalance.subtract(transferAmount));
                 this.updateBalance(targetAccount, targetOriginalBalance.add(transferAmount));
                 builder.isSuccessful(true);
-
             } catch (Exception ex) {
                 builder.isSuccessful(false);
                 log.error("transfer unsuccessful. investigation required");
