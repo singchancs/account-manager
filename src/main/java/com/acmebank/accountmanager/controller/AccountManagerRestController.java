@@ -2,7 +2,6 @@ package com.acmebank.accountmanager.controller;
 
 import com.acmebank.accountmanager.dto.BalanceDTO;
 import com.acmebank.accountmanager.dto.TransferPayloadDTO;
-import com.acmebank.accountmanager.dto.TransferResultDTO;
 import com.acmebank.accountmanager.exceptions.EntityNotFoundException;
 import com.acmebank.accountmanager.exceptions.TransferFailedException;
 import com.acmebank.accountmanager.service.AccountService;
@@ -41,8 +40,8 @@ public class AccountManagerRestController {
                     MediaType.APPLICATION_XML_VALUE,
             })
     @ResponseStatus(HttpStatus.CREATED)
-    public TransferResultDTO transferToAccount(@RequestHeader(HEADER_ACCOUNT_NUMBER) String accountNumber, @RequestBody TransferPayloadDTO payloadDto) throws EntityNotFoundException, TransferFailedException {
-        TransferResultDTO transferResultDTO = this.accountService.transferTo(accountNumber, payloadDto);
-        return transferResultDTO;
+    public BalanceDTO transferToAccount(@RequestHeader(HEADER_ACCOUNT_NUMBER) String accountNumber, @RequestBody TransferPayloadDTO payloadDto) throws EntityNotFoundException, TransferFailedException {
+        BalanceDTO balanceDTO = this.accountService.transferTo(accountNumber, payloadDto);
+        return balanceDTO;
     }
 }

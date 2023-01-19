@@ -8,12 +8,15 @@ import java.util.stream.IntStream;
 
 public class EntityNotFoundException extends RuntimeException {
 
-    public EntityNotFoundException(Class clazz, String... searchParamsMap) {
-        super(EntityNotFoundException.generateMessage(clazz.getSimpleName(), toMap(String.class, String.class, searchParamsMap)));
+    private final String errorCode;
+
+    public EntityNotFoundException(Class clazz, String errorCode, String... searchParamsMap) {
+        super(EntityNotFoundException.generateMessage(clazz.getSimpleName(), errorCode, toMap(String.class, String.class, searchParamsMap)));
+        this.errorCode = errorCode;
     }
 
-    private static String generateMessage(String entity, Map<String, String> searchParams) {
-        return StringUtils.capitalize(entity) +
+    private static String generateMessage(String entity, String errorCode, Map<String, String> searchParams) {
+        return "[" + errorCode + "] " + StringUtils.capitalize(entity) +
                 " was not found for parameters " +
                 searchParams;
     }
@@ -26,5 +29,9 @@ public class EntityNotFoundException extends RuntimeException {
                 .collect(HashMap::new,
                         (m, i) -> m.put(keyType.cast(entries[i]), valueType.cast(entries[i + 1])),
                         Map::putAll);
+    }
+
+    public String getErrorCode() {
+        return errorCode;
     }
 }

@@ -2,6 +2,7 @@ package com.acmebank.accountmanager.handler;
 
 import com.acmebank.accountmanager.error.ApiError;
 import com.acmebank.accountmanager.exceptions.EntityNotFoundException;
+import com.acmebank.accountmanager.exceptions.TransferFailedException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -15,8 +16,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.*;
 
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -74,6 +74,16 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             EntityNotFoundException ex) {
         ApiError apiError = new ApiError(NOT_FOUND);
         apiError.setMessage(ex.getMessage());
+        apiError.setErrorCode(ex.getErrorCode());
+        return buildResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(TransferFailedException.class)
+    protected ResponseEntity<Object> handleTransferFailed(
+            TransferFailedException ex) {
+        ApiError apiError = new ApiError(INTERNAL_SERVER_ERROR);
+        apiError.setMessage(ex.getMessage());
+        apiError.setErrorCode(ex.getErrorCode());
         return buildResponseEntity(apiError);
     }
 

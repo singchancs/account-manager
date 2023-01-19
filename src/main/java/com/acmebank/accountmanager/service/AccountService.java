@@ -5,7 +5,6 @@ import com.acmebank.accountmanager.dao.AccountRepository;
 import com.acmebank.accountmanager.dao.TransferHistoryRepository;
 import com.acmebank.accountmanager.dto.BalanceDTO;
 import com.acmebank.accountmanager.dto.TransferPayloadDTO;
-import com.acmebank.accountmanager.dto.TransferResultDTO;
 import com.acmebank.accountmanager.exceptions.EntityNotFoundException;
 import com.acmebank.accountmanager.exceptions.TransferFailedException;
 import com.acmebank.accountmanager.model.Account;
@@ -32,7 +31,7 @@ public class AccountService {
         Account account = this.accountRepository.findByAccountNumber(accountNumber);
         if (account == null) {
             log.error("account not found: " + accountNumber);
-            throw new EntityNotFoundException(Account.class, "accountNumber", accountNumber);
+            throw new EntityNotFoundException(Account.class, ErrorCode.ERR_ACME_003, "accountNumber", accountNumber);
         }
         return account;
     }
@@ -59,7 +58,7 @@ public class AccountService {
         accountRepository.save(account);
     }
 
-    public TransferResultDTO transferTo(String sourceAccountNumber, TransferPayloadDTO payloadDTO) throws EntityNotFoundException, TransferFailedException {
+    public BalanceDTO transferTo(String sourceAccountNumber, TransferPayloadDTO payloadDTO) throws EntityNotFoundException, TransferFailedException {
         log.info("getting account with account number: " + sourceAccountNumber);
         Double transferAmount = payloadDTO.getTransferAmount();
         String targetAccountNumber = payloadDTO.getTargetAccountNumber();;
@@ -86,25 +85,15 @@ public class AccountService {
             } catch (Exception ex) {
                 builder.isSuccessful(false);
                 log.error("transfer unsuccessful. investigation required");
-                throw new TransferFailedException("Transfer failed", ex);
+                throw new TransferFailedException(ErrorCode.ERR_ACME_001, "Transfer failed", ex);
             }
         } else {
             log.info("not enough balance to transfer to other account");
-            builder.isSuccessful(false)
-                    .errorCode(ErrorCode.ERR_ACME_002)
-                    .remark("insufficient balance");
+            throw new TransferFailedException(ErrorCode.ERR_ACME_002, "Insufficient Balance");
+
         }
         TransferHistory transferHistory = builder.build();
         transferHistoryRepository.save(transferHistory);
-
-        TransferResultDTO transferResultDTO = TransferResultDTO.builder()
-                .isSuccessful(transferHistory.getSuccessful())
-                .errorCode(transferHistory.getErrorCode())
-                .remark(transferHistory.getRemark())
-                .currency(sourceAccount.getCurrency())
-                .balance(sourceAccount.getBalance())
-                .lastUpdatedAt(sourceAccount.getUpdatedAt())
-                .build();
-        return transferResultDTO;
+        return this.convertToDto(sourceAccount);
     }
 }
