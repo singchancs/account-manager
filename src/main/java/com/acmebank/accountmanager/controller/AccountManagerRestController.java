@@ -2,9 +2,8 @@ package com.acmebank.accountmanager.controller;
 
 import com.acmebank.accountmanager.dto.BalanceDTO;
 import com.acmebank.accountmanager.dto.TransferPayloadDTO;
-import com.acmebank.accountmanager.model.Account;
+import com.acmebank.accountmanager.dto.TransferResultDTO;
 import com.acmebank.accountmanager.service.AccountService;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -43,7 +42,8 @@ public class AccountManagerRestController {
                     MediaType.APPLICATION_XML_VALUE,
             })
     @ResponseStatus(HttpStatus.CREATED)
-    public BalanceDTO transferToAccount(@RequestHeader(HEADER_ACCOUNT_NUMBER) String accountNumber, @RequestBody TransferPayloadDTO payload) {
-        return null;
+    public TransferResultDTO transferToAccount(@RequestHeader(HEADER_ACCOUNT_NUMBER) String accountNumber, @RequestBody TransferPayloadDTO payloadDto) throws Exception {
+        TransferResultDTO transferResultDTO = this.accountService.transferTo(accountNumber, payloadDto);
+        return transferResultDTO;
     }
 }

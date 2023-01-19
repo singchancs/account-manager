@@ -5,6 +5,7 @@ import com.acmebank.accountmanager.dao.AccountRepository;
 import com.acmebank.accountmanager.dao.TransferHistoryRepository;
 import com.acmebank.accountmanager.dto.BalanceDTO;
 import com.acmebank.accountmanager.dto.TransferPayloadDTO;
+import com.acmebank.accountmanager.dto.TransferResultDTO;
 import com.acmebank.accountmanager.model.Account;
 import com.acmebank.accountmanager.model.TransferHistory;
 import org.slf4j.Logger;
@@ -53,10 +54,11 @@ public class AccountService {
 
     private void updateBalance(Account account, Double adjustment) {
         account.setBalance(adjustment);
+        account.setUpdatedAt(new Date());
         accountRepository.save(account);
     }
 
-    public BalanceDTO transferTo(String sourceAccountNumber, TransferPayloadDTO payloadDTO) throws Exception {
+    public TransferResultDTO transferTo(String sourceAccountNumber, TransferPayloadDTO payloadDTO) throws Exception {
         log.info("getting account with account number: " + sourceAccountNumber);
         Double transferAmount = payloadDTO.getTransferAmount();
         String targetAccountNumber = payloadDTO.getTargetAccountNumber();;
@@ -67,14 +69,17 @@ public class AccountService {
                 .targetAccountNumber(targetAccountNumber)
                 .transferAmount(transferAmount)
                 .transferAt(new Date());
-        if (sourceAccount.getBalance() > 0 && sourceAccount.getBalance() >= transferAmount) {
+
+        Double sourceOriginalBalance = sourceAccount.getBalance();
+        if (sourceOriginalBalance > 0 && sourceOriginalBalance >= transferAmount) {
             log.info("got enough balance to transfer to other account");
 
             Account targetAccount = this.getAccount(targetAccountNumber);
+            Double targetOriginalBalance = targetAccount.getBalance();
             try {
                 log.info("transferring " + transferAmount + " from " + sourceAccountNumber + " to " + targetAccountNumber);
-                this.updateBalance(sourceAccount, -1 * transferAmount);
-                this.updateBalance(targetAccount, transferAmount);
+                this.updateBalance(sourceAccount, sourceOriginalBalance - transferAmount);
+                this.updateBalance(targetAccount, targetOriginalBalance + transferAmount);
                 builder.isSuccessful(true);
 
             } catch (Exception ex) {
@@ -89,6 +94,15 @@ public class AccountService {
         }
         TransferHistory transferHistory = builder.build();
         transferHistoryRepository.save(transferHistory);
-        return this.convertToDto(sourceAccount);
+
+        TransferResultDTO transferResultDTO = TransferResultDTO.builder()
+                .isSuccessful(transferHistory.getSuccessful())
+                .errorCode(transferHistory.getErrorCode())
+                .remark(transferHistory.getRemark())
+                .currency(sourceAccount.getCurrency())
+                .balance(sourceAccount.getBalance())
+                .lastUpdatedAt(sourceAccount.getUpdatedAt())
+                .build();
+        return transferResultDTO;
     }
 }
