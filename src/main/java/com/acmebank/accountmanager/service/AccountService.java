@@ -5,6 +5,7 @@ import com.acmebank.accountmanager.dao.AccountRepository;
 import com.acmebank.accountmanager.dao.TransferHistoryRepository;
 import com.acmebank.accountmanager.dto.BalanceDTO;
 import com.acmebank.accountmanager.dto.TransferPayloadDTO;
+import com.acmebank.accountmanager.dto.TransferStatusDTO;
 import com.acmebank.accountmanager.exceptions.EntityNotFoundException;
 import com.acmebank.accountmanager.exceptions.TransferFailedException;
 import com.acmebank.accountmanager.model.Account;
@@ -59,8 +60,14 @@ public class AccountService {
         accountRepository.save(account);
     }
 
-    public BalanceDTO transferTo(String sourceAccountNumber, TransferPayloadDTO payloadDTO) throws EntityNotFoundException, TransferFailedException {
+    public TransferStatusDTO transferTo(String sourceAccountNumber, TransferPayloadDTO payloadDTO) throws EntityNotFoundException, TransferFailedException {
         log.info("getting account with account number: " + sourceAccountNumber);
+        TransferStatusDTO.TransferStatusDTOBuilder transferStatusDTOBuilder = TransferStatusDTO.builder()
+                .createdAt(new Date())
+                .amount(payloadDTO.getTransferAmount())
+                .currency(payloadDTO.getTransferCurrency())
+                .transferTo(payloadDTO.getTargetAccountNumber());
+
         BigDecimal transferAmount = payloadDTO.getTransferAmount();
         String targetAccountNumber = payloadDTO.getTargetAccountNumber();
         Account sourceAccount = this.getAccount(sourceAccountNumber);
@@ -75,8 +82,7 @@ public class AccountService {
         TransferHistory.TransferHistoryBuilder builder = TransferHistory.builder()
                 .sourceAccountNumber(sourceAccountNumber)
                 .targetAccountNumber(targetAccountNumber)
-                .transferAmount(transferAmount)
-                .transferAt(new Date());
+                .transferAmount(transferAmount);
 
         BigDecimal sourceOriginalBalance = sourceAccount.getBalance();
         if (sourceOriginalBalance.compareTo(BigDecimal.ZERO) == 1 && (sourceOriginalBalance.compareTo(transferAmount) == 1 || sourceOriginalBalance.compareTo(transferAmount) == 0)) {
@@ -88,8 +94,14 @@ public class AccountService {
                 log.info("transferring " + transferAmount + " from " + sourceAccountNumber + " to " + targetAccountNumber);
                 this.updateBalance(sourceAccount, sourceOriginalBalance.subtract(transferAmount));
                 this.updateBalance(targetAccount, targetOriginalBalance.add(transferAmount));
-                builder.isSuccessful(true);
+                builder.isSuccessful(true)
+                        .transferAt(new Date());
                 transferHistoryRepository.save(builder.build());
+                TransferStatusDTO transferStatusDTO = transferStatusDTOBuilder.status("success")
+                        .transferAt(new Date())
+                        .balance(this.convertToDto(sourceAccount))
+                        .build();
+                return transferStatusDTO;
 
             } catch (Exception ex) {
                 builder.isSuccessful(false);
@@ -108,6 +120,5 @@ public class AccountService {
             throw new TransferFailedException(ErrorCode.ERR_ACME_003, "Insufficient Balance");
 
         }
-        return this.convertToDto(sourceAccount);
     }
 }
