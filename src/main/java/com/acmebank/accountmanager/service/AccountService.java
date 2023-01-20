@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 @Service
-public class AccountService {
+public class AccountService implements IAccountService {
     private static final Logger log = LoggerFactory.getLogger(AccountService.class);
 
     @Autowired
@@ -38,13 +38,6 @@ public class AccountService {
         return account;
     }
 
-    public BalanceDTO getBalance(String accountNumber) throws EntityNotFoundException {
-        log.info("getting account with account number: " + accountNumber);
-        Account account = this.getAccount(accountNumber);
-        log.info("account balance: " + account.getBalance());
-        return this.convertToDto(account);
-    }
-
     private BalanceDTO convertToDto(Account account) {
         BalanceDTO balanceDTO = BalanceDTO.builder()
                 .currency(account.getCurrency())
@@ -55,11 +48,21 @@ public class AccountService {
     }
 
     private void updateBalance(Account account, BigDecimal adjustment) {
+        log.info("updating account " + account.getAccountNumber() + " with balance " + adjustment);
         account.setBalance(adjustment);
         account.setUpdatedAt(new Date());
         accountRepository.save(account);
     }
 
+    @Override
+    public BalanceDTO getBalance(String accountNumber) throws EntityNotFoundException {
+        log.info("getting account with account number: " + accountNumber);
+        Account account = this.getAccount(accountNumber);
+        log.info("account balance: " + account.getBalance());
+        return this.convertToDto(account);
+    }
+
+    @Override
     public TransferStatusDTO transferTo(String sourceAccountNumber, TransferPayloadDTO payloadDTO) throws EntityNotFoundException, TransferFailedException {
         log.info("getting account with account number: " + sourceAccountNumber);
         TransferStatusDTO.TransferStatusDTOBuilder transferStatusDTOBuilder = TransferStatusDTO.builder()
@@ -75,8 +78,8 @@ public class AccountService {
             throw new TransferFailedException(ErrorCode.ERR_ACME_004, "Source account is the same as target account");
         }
 
-        if (transferAmount.compareTo(BigDecimal.ZERO) == -1 || transferAmount.compareTo(BigDecimal.ZERO) == 0) {
-            throw new TransferFailedException(ErrorCode.ERR_ACME_005, "Invalid transfer amount. Must be greater than 0");
+        if (transferAmount.compareTo(new BigDecimal("0.0001")) == -1) {
+            throw new TransferFailedException(ErrorCode.ERR_ACME_005, "Invalid transfer amount. Must be greater than 0.01");
         }
 
         TransferHistory.TransferHistoryBuilder builder = TransferHistory.builder()
@@ -85,11 +88,13 @@ public class AccountService {
                 .transferAmount(transferAmount);
 
         BigDecimal sourceOriginalBalance = sourceAccount.getBalance();
+        log.info("source account balance: " + sourceOriginalBalance);
         if (sourceOriginalBalance.compareTo(BigDecimal.ZERO) == 1 && (sourceOriginalBalance.compareTo(transferAmount) == 1 || sourceOriginalBalance.compareTo(transferAmount) == 0)) {
             log.info("got enough balance to transfer to other account");
 
             Account targetAccount = this.getAccount(targetAccountNumber);
             BigDecimal targetOriginalBalance = targetAccount.getBalance();
+            log.info("target account balance: " + sourceOriginalBalance);
             try {
                 log.info("transferring " + transferAmount + " from " + sourceAccountNumber + " to " + targetAccountNumber);
                 this.updateBalance(sourceAccount, sourceOriginalBalance.subtract(transferAmount));

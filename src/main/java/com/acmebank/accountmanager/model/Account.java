@@ -17,7 +17,7 @@ public class Account {
     @Enumerated(value = EnumType.STRING)
     @Column(nullable = false, length = 3)
     private Currency currency;
-    @Column(nullable = false)
+    @Column(nullable = false, precision = 20, scale = 4)
     private BigDecimal balance;
     @Column(updatable = false, nullable = false, length = 100)
     private String ownedBy;

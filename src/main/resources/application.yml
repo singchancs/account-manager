@@ -3,8 +3,6 @@ server:
   error:
     whitelabel:
       enabled: true
-  servlet:
-    context-path: /api
 spring:
   sql:
     init:

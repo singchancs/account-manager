@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("/1.0/accountmanager")
+@RequestMapping("/api/1.0/accountmanager")
 public class AccountManagerRestController {
     private static final Logger log = LoggerFactory.getLogger(AccountManagerRestController.class);
     private static final String HEADER_ACCOUNT_NUMBER = "Account-Number";
