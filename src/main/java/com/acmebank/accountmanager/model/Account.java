@@ -12,7 +12,7 @@ public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(updatable = false, unique = true, nullable = false, length = 8)
+    @Column(updatable = false, unique = true, nullable = false, length = 20)
     private String accountNumber;
     @Enumerated(value = EnumType.STRING)
     @Column(nullable = false, length = 3)

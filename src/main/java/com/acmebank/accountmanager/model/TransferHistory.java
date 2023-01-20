@@ -19,9 +19,9 @@ public class TransferHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(updatable = false, nullable = false, length = 8)
+    @Column(updatable = false, length = 20)
     private String sourceAccountNumber;
-    @Column(updatable = false, nullable = false, length = 8)
+    @Column(updatable = false, length = 20)
     private String targetAccountNumber;
     @Column(updatable = false, nullable = false)
     private Date createdAt;
