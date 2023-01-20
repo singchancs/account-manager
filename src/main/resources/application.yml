@@ -10,7 +10,7 @@ spring:
       continue-on-error: true
   h2:
     console:
-      enabled: true
+      enabled: false
   datasource:
     url: jdbc:h2:file:~/acmebankdb
     username: sa
