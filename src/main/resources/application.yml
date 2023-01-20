@@ -21,7 +21,7 @@ spring:
       jpa:database-platform: org.hibernate.dialect.H2Dialect
     show-sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: update # required to be change to none in production
     defer-datasource-initialization: true
   jackson:
     default-property-inclusion: non_null
