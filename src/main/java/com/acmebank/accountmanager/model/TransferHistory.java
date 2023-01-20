@@ -23,9 +23,11 @@ public class TransferHistory {
     private String sourceAccountNumber;
     @Column(updatable = false, nullable = false, length = 8)
     private String targetAccountNumber;
-    @Column(updatable = false,nullable = false, precision = 20, scale = 4)
-    private BigDecimal transferAmount;
     @Column(updatable = false, nullable = false)
+    private Date createdAt;
+    @Column(updatable = false, nullable = false, precision = 20, scale = 4)
+    private BigDecimal transferAmount;
+    @Column(updatable = false)
     private Date transferAt;
     @Column(nullable = false)
     private Boolean isSuccessful;

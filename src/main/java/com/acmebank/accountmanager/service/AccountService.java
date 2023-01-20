@@ -65,8 +65,9 @@ public class AccountService implements IAccountService {
     @Override
     public TransferStatusDTO transferTo(String sourceAccountNumber, TransferPayloadDTO payloadDTO) throws EntityNotFoundException, TransferFailedException {
         log.info("getting account with account number: " + sourceAccountNumber);
+        Date createdAt = new Date();
         TransferStatusDTO.TransferStatusDTOBuilder transferStatusDTOBuilder = TransferStatusDTO.builder()
-                .createdAt(new Date())
+                .createdAt(createdAt)
                 .amount(payloadDTO.getTransferAmount())
                 .currency(payloadDTO.getTransferCurrency())
                 .transferTo(payloadDTO.getTargetAccountNumber());
@@ -83,6 +84,7 @@ public class AccountService implements IAccountService {
         }
 
         TransferHistory.TransferHistoryBuilder builder = TransferHistory.builder()
+                .createdAt(createdAt)
                 .sourceAccountNumber(sourceAccountNumber)
                 .targetAccountNumber(targetAccountNumber)
                 .transferAmount(transferAmount);
