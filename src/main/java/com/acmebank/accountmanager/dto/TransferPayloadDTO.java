@@ -16,11 +16,11 @@ public class TransferPayloadDTO {
 
     @NotBlank
     private String targetAccountNumber;
-    @NotBlank
-    private String transferCurrency;
     @NotNull
     @DecimalMin(value = "0.0", message = "To must be greater than zero")
     private BigDecimal transferAmount;
+    @NotBlank
+    private String transferCurrency;
 
     public String getTargetAccountNumber() {
         return targetAccountNumber;

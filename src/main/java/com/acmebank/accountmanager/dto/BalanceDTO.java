@@ -1,6 +1,8 @@
 package com.acmebank.accountmanager.dto;
 
 import com.acmebank.accountmanager.Currency;
+import com.acmebank.accountmanager.util.BigDecimalSerialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Builder;
 import lombok.Data;
 
@@ -12,6 +14,7 @@ import java.util.Date;
 public class BalanceDTO {
 
     private Currency currency;
+    @JsonSerialize(using = BigDecimalSerialize.class)
     private BigDecimal balance;
     private Date lastUpdatedAt;
 

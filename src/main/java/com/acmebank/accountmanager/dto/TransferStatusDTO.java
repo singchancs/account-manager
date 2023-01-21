@@ -1,6 +1,7 @@
 package com.acmebank.accountmanager.dto;
 
-import com.acmebank.accountmanager.Currency;
+import com.acmebank.accountmanager.util.BigDecimalSerialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Builder;
 import lombok.Data;
 
@@ -14,6 +15,7 @@ public class TransferStatusDTO {
     private String status;
     private Date createdAt;
     private String currency;
+    @JsonSerialize(using = BigDecimalSerialize.class)
     private BigDecimal amount;
     private Date transferAt;
     private String transferTo;
