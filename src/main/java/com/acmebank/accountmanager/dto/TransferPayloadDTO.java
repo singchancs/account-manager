@@ -17,6 +17,7 @@ public class TransferPayloadDTO {
     private String targetAccountNumber;
     @NotBlank
     private String transferCurrency;
+    @NotNull
     @DecimalMin(value = "0.0", message = "To must be greater than zero")
     private BigDecimal transferAmount;
 
